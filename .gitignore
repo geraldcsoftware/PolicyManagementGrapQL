@@ -1,0 +1,8 @@
+[Bb]in
+[Dd]ebug
+[Rr]elease
+[Tt]est[Rr]esults
+[Ll]ogs
+**/obj
+obj
+.vs
