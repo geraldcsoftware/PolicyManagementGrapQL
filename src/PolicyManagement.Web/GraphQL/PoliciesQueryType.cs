@@ -8,7 +8,6 @@ using System.Linq;
 namespace PolicyManagement.Web.GraphQL
 {
     public class PoliciesQueryType : ObjectTypeExtension
-
     {
         protected override void Configure(IObjectTypeDescriptor descriptor)
         {

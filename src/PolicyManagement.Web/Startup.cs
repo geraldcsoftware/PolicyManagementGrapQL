@@ -1,4 +1,6 @@
 ﻿using HotChocolate.AspNetCore;
+using IdGen;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PolicyManagement.Data;
 using PolicyManagement.Web.GraphQL;
+using System;
 
 namespace PolicyManagement.Web
 {
@@ -16,7 +19,14 @@ namespace PolicyManagement.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddSingleton<IIdGenerator<long>>(_ =>
+            {
+                var epoch = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var structure = new IdStructure(39, 4, 20);
+                var options = new IdGeneratorOptions(structure, new DefaultTimeSource(epoch));
+                var generator = new IdGenerator(1, options);
+                return generator;
+            });
             services.AddPooledDbContextFactory<PolicyManagementDbContext>((serviceProvider, options) =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
@@ -25,14 +35,17 @@ namespace PolicyManagement.Web
 
                 options.UseNpgsql(connectionString).UseLoggerFactory(loggerFactory);
             });
-
+            services.AddMediatR(typeof(Startup));
             services.AddGraphQLServer()
                     .AddFiltering()
                     .AddProjections()
                     .AddQueryType(q => q.Name("PolicyManagement"))
                     .AddType<PolicyType>()
                     .AddTypeExtension<PoliciesQueryType>()
-                    .AddTypeExtension<MembersQueryType>();
+                    .AddTypeExtension<MembersQueryType>()
+                    .AddMutationType(q => q.Name("PolicyUpdates"))
+                    .AddTypeExtension<AddPolicyMutationType>()
+                    .AddType<AddPolicyInputModelType>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
