@@ -1,28 +1,32 @@
-﻿using HotChocolate.Types;
+﻿using HotChocolate;
+using HotChocolate.Data;
+using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using PolicyManagement.Data;
-using PolicyManagement.Data.Models;
-using System;
 using System.Linq;
 
 namespace PolicyManagement.Web.GraphQL
 {
+    public class PoliciesQueryType : ObjectTypeExtension
 
-    public class MembersQueryType : ObjectTypeExtension
     {
         protected override void Configure(IObjectTypeDescriptor descriptor)
         {
             descriptor.Name("PolicyManagement");
-            descriptor.Field("members")
+            descriptor.Field("policies")
+                      .Type<ListType<PolicyType>>()
                       .UseDbContext<PolicyManagementDbContext>()
                       .UseProjection()
                       .UseFiltering()
-                      .Resolver((ctx) =>
+                      .Resolve((ctx) =>
                       {
                           var factory = ctx.Service<IDbContextFactory<PolicyManagementDbContext>>();
                           var dbContext = factory.CreateDbContext();
-
-                          return dbContext.PolicyMembers.AsNoTracking().AsQueryable();
+                          return dbContext.Policies
+                            .AsNoTracking()
+                            .Include(p => p.State)
+                            .Include(p => p.Members)
+                            .AsQueryable();
                       });
         }
     }

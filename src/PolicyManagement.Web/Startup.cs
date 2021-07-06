@@ -30,7 +30,8 @@ namespace PolicyManagement.Web
                     .AddFiltering()
                     .AddProjections()
                     .AddQueryType(q => q.Name("PolicyManagement"))
-                    .AddTypeExtension<PoliciesQueryTypeExtension>()
+                    .AddType<PolicyType>()
+                    .AddTypeExtension<PoliciesQueryType>()
                     .AddTypeExtension<MembersQueryType>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
