@@ -33,4 +33,23 @@ namespace PolicyManagement.Web.GraphQL
                       });
         }
     }
+
+    public class AddPolicyMemberMutationType : ObjectTypeExtension
+    {
+        protected override void Configure(IObjectTypeDescriptor descriptor)
+        {
+            descriptor.Name("PolicyUpdates");
+            descriptor.Field("addPolicyMember")
+                      .Type<PolicyMemberType>()
+                      .Argument("input", arg => arg.Type<AddPolicyMemberInputType>())
+                      .Resolve(async context =>
+                      {
+                          var input = context.ArgumentValue<AddPolicyMemberRequest>("input");
+                          var mediator = context.Service<IMediator>();
+
+                          var result = await mediator.Send(input);
+                          return result.IsT0 ? result.AsT0 : result.AsT1;
+                      });
+        }
+    }
 }

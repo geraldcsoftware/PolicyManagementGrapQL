@@ -17,6 +17,7 @@ namespace PolicyManagement.Web.GraphQL
                       .UseDbContext<PolicyManagementDbContext>()
                       .UseProjection()
                       .UseFiltering()
+                      .UseSorting()
                       .Resolve((ctx) =>
                       {
                           var factory = ctx.Service<IDbContextFactory<PolicyManagementDbContext>>();

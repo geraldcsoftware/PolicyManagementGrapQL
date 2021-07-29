@@ -35,7 +35,7 @@ namespace PolicyManagement.Web.Mediator.Handlers
 
             _logger.LogInformation("Creating policy based on input {@Request}", request);
             var currentDate = DateTime.UtcNow;
-            var policyNumber = $"{_idGenerator.CreateId():D16}";
+            var policyNumber = $"{_idGenerator.CreateId():X}";
             var policy = new Policy
             {
                 PolicyNumber = policyNumber,
@@ -61,7 +61,7 @@ namespace PolicyManagement.Web.Mediator.Handlers
                         DateOfBirth = request.DateOfBirth,
                         IdNumber = request.IdNumber,
                         Gender = request.Gender,
-                        SuffixNumber="01",
+                        SuffixNumber = "01",
                         Status = new MembershipState
                         {
                             ActivationStatus = "ACTIVE",
@@ -81,7 +81,7 @@ namespace PolicyManagement.Web.Mediator.Handlers
                 _logger.LogInformation("Saved new policy {@Policy}", policy);
                 return policy;
             }
-            catch (DbUpdateException exception)
+            catch (Exception exception)
             {
                 _logger.LogError(exception.GetBaseException(), "Failed to save policy because of an error");
 
@@ -106,23 +106,6 @@ namespace PolicyManagement.Web.Mediator.Handlers
                 }
                 return OneOf<Policy, IError>.FromT1(ErrorBuilder.New().SetMessage("Unknown error").SetCode("ERROR").Build());
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unhandled Error");
-                return OneOf<Policy, IError>.FromT1(ErrorBuilder.New().SetMessage("Unknown error").SetCode("ERROR").Build());
-            }
-            /*  FK Violation
-
-              Severity: ERROR
-       SqlState: 23503
-       MessageText: insert or update on table "PolicySubscriptions" violates foreign key constraint "FK_PolicySubscriptions_Packages_PackageId"
-       Detail: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
-       SchemaName: public
-       TableName: PolicySubscriptions
-       ConstraintName: FK_PolicySubscriptions_Packages_PackageId
-       File: ri_triggers.c
-       Line: 2465
-       Routine: ri_ReportViolation*/
         }
     }
 }

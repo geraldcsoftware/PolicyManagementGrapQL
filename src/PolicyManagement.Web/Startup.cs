@@ -1,17 +1,20 @@
-﻿using HotChocolate.AspNetCore;
+﻿using System;
+using FluentValidation;
+using HotChocolate.AspNetCore;
+using HotChocolate.Types.Pagination;
 using IdGen;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PolicyManagement.Data;
 using PolicyManagement.Web.GraphQL;
-using System;
+using PolicyManagement.Web.Mediator.Requests;
+using PolicyManagement.Web.Mediator.Validators;
 
 namespace PolicyManagement.Web
 {
@@ -27,6 +30,7 @@ namespace PolicyManagement.Web
                 var generator = new IdGenerator(1, options);
                 return generator;
             });
+            services.AddTransient<IValidator<AddPolicyMemberRequest>, AddPolicyMemberValidator>();
             services.AddPooledDbContextFactory<PolicyManagementDbContext>((serviceProvider, options) =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
@@ -39,13 +43,23 @@ namespace PolicyManagement.Web
             services.AddGraphQLServer()
                     .AddFiltering()
                     .AddProjections()
+                    .AddSorting()
+                    .SetPagingOptions(new PagingOptions
+                    {
+                        IncludeTotalCount = true,
+                        MaxPageSize = 100,
+                        DefaultPageSize = 10
+                    })
                     .AddQueryType(q => q.Name("PolicyManagement"))
                     .AddType<PolicyType>()
                     .AddTypeExtension<PoliciesQueryType>()
                     .AddTypeExtension<MembersQueryType>()
                     .AddMutationType(q => q.Name("PolicyUpdates"))
                     .AddTypeExtension<AddPolicyMutationType>()
-                    .AddType<AddPolicyInputModelType>();
+                    .AddTypeExtension<AddPolicyMemberMutationType>()
+                    .AddType<AddPolicyInputModelType>()
+                    .AddType<AddPolicyMemberInputType>()
+                    .AddType<PolicyMemberType>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

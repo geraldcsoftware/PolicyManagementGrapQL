@@ -12,8 +12,12 @@ namespace PolicyManagement.Web.GraphQL
             descriptor.Field("Status")
                       .Type<StringType>()
                       .Resolve((ctx) => ctx.Parent<Policy>().State?.ActivationStatus);
-            descriptor.Field("package").Name("package").Type<StringType>()
-                .Resolve(ctx => ctx.Parent<Policy>().Subscription?.Package?.Name);
+            descriptor.Field("package")
+                      .Type<StringType>()
+                      .Resolve(ctx => ctx.Parent<Policy>().Subscription?.Package?.Name);
+            descriptor.Field("memberCount")
+                      .Type<IntType>()
+                      .Resolve(ctx => ctx.Parent<Policy>().Members.Count);
         }
     }
 }
